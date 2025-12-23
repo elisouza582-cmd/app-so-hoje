@@ -10,6 +10,8 @@ import {
 } from "@/lib/storage";
 
 const emptyInputs = ["", "", ""];
+const DISMISSED_KEY = "sohoje:dismissed";
+const ONBOARDED_KEY = "sohoje:onboarded";
 
 const buildInputsFromEntry = (entry: DailyEntry) => {
   const values = entry.priorities.map((priority) => priority.text);
@@ -39,6 +41,8 @@ export default function Home() {
   const [entry, setEntry] = useState<DailyEntry | null>(null);
   const [editing, setEditing] = useState(true);
   const [inputs, setInputs] = useState<string[]>(emptyInputs);
+  const [dismissedForToday, setDismissedForToday] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     const todayEntry = getTodayEntry();
@@ -46,6 +50,16 @@ export default function Home() {
     if (todayEntry.priorities.length > 0) {
       setEditing(false);
       setInputs(buildInputsFromEntry(todayEntry));
+    }
+
+    if (typeof window !== "undefined") {
+      const today = new Date();
+      const date = `${today.getFullYear()}-${String(
+        today.getMonth() + 1
+      ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const dismissed = window.localStorage.getItem(DISMISSED_KEY);
+      setDismissedForToday(dismissed === date);
+      setShowOnboarding(!window.localStorage.getItem(ONBOARDED_KEY));
     }
   }, []);
 
@@ -55,6 +69,28 @@ export default function Home() {
     const done = entry.priorities.filter((item) => item.done).length;
     return { done, total };
   }, [entry]);
+
+  const reminder = useMemo(() => {
+    if (!entry || dismissedForToday) return null;
+    const totalCount = entry.priorities.filter((item) =>
+      item.text.trim()
+    ).length;
+    const doneCount = entry.priorities.filter((item) => item.done).length;
+    if (totalCount === 0) {
+      return "Defina suas 3 prioridades para começar bem o dia.";
+    }
+    if (doneCount === totalCount) {
+      return null;
+    }
+    const hour = new Date().getHours();
+    if (hour >= 18 && doneCount < totalCount) {
+      return "Fim do dia chegando. Feche pelo menos 1 prioridade hoje.";
+    }
+    if (doneCount === 0) {
+      return "Escolha 1 prioridade e finalize agora em 10 minutos.";
+    }
+    return "Bom ritmo. Falta pouco para fechar o dia.";
+  }, [entry, dismissedForToday]);
 
   const handleInputChange = (index: number, value: string) => {
     setInputs((prev) => {
@@ -77,6 +113,10 @@ export default function Home() {
     saveTodayEntry(updated);
     setEntry(updated);
     setEditing(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(ONBOARDED_KEY, "1");
+      setShowOnboarding(false);
+    }
   };
 
   const handleToggle = (id: string) => {
@@ -113,6 +153,16 @@ export default function Home() {
     setEditing(true);
   };
 
+  const handleDismissReminder = () => {
+    if (typeof window === "undefined") return;
+    const today = new Date();
+    const date = `${today.getFullYear()}-${String(
+      today.getMonth() + 1
+    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    window.localStorage.setItem(DISMISSED_KEY, date);
+    setDismissedForToday(true);
+  };
+
   if (!entry) {
     return null;
   }
@@ -127,7 +177,25 @@ export default function Home() {
         <p className="text-base text-slate-600">
           O que realmente precisa ser feito hoje?
         </p>
+        {showOnboarding ? (
+          <p className="text-sm text-slate-500">
+            Escolha 3 prioridades. O resto é bônus.
+          </p>
+        ) : null}
       </header>
+
+      {reminder ? (
+        <section className="flex flex-col gap-3 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-slate-700">
+          <p className="text-sm font-medium">{reminder}</p>
+          <button
+            type="button"
+            onClick={handleDismissReminder}
+            className="self-start text-sm font-semibold text-blue-700 hover:text-blue-800"
+          >
+            Dispensar
+          </button>
+        </section>
+      ) : null}
 
       {editing ? (
         <section className="space-y-4 rounded-2xl bg-white p-5 shadow-sm">
