@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: "Só Hoje",
   description: "Defina até 3 prioridades e foque no que importa hoje.",
   manifest: "/manifest.json",
-  themeColor: "#0f172a"
+  themeColor: "#0b1220"
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" />
-        <meta name="theme-color" content="#0f172a" />
+        <meta name="theme-color" content="#0b1220" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <link rel="apple-touch-icon" href="/icon.svg" />
       </head>

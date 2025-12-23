@@ -1,5 +1,5 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ícone Só Hoje">
-  <rect width="512" height="512" rx="96" fill="#0f172a"/>
-  <rect x="56" y="56" width="400" height="400" rx="72" fill="#2563eb"/>
-  <text x="256" y="276" font-family="Arial, sans-serif" font-size="72" font-weight="700" text-anchor="middle" fill="#f8fafc">Só Hoje</text>
+  <rect width="512" height="512" rx="96" fill="#0b1220" />
+  <text x="256" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="140" font-weight="700" fill="#ffffff">Só</text>
+  <text x="256" y="360" text-anchor="middle" font-family="Arial, sans-serif" font-size="110" font-weight="700" fill="#ffffff">Hoje</text>
 </svg>

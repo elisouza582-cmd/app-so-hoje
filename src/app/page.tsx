@@ -63,6 +63,12 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
+  }, []);
+
   const summary = useMemo(() => {
     if (!entry) return { done: 0, total: 0 };
     const total = entry.priorities.length;
