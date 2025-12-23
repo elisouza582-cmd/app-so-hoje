@@ -43,6 +43,13 @@ export default function Home() {
   const [inputs, setInputs] = useState<string[]>(emptyInputs);
   const [dismissedForToday, setDismissedForToday] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const getTodayString = () => {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(today.getDate()).padStart(2, "0")}`;
+  };
 
   useEffect(() => {
     const todayEntry = getTodayEntry();
@@ -53,10 +60,7 @@ export default function Home() {
     }
 
     if (typeof window !== "undefined") {
-      const today = new Date();
-      const date = `${today.getFullYear()}-${String(
-        today.getMonth() + 1
-      ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+      const date = getTodayString();
       const dismissed = window.localStorage.getItem(DISMISSED_KEY);
       setDismissedForToday(dismissed === date);
       setShowOnboarding(!window.localStorage.getItem(ONBOARDED_KEY));
@@ -161,10 +165,7 @@ export default function Home() {
 
   const handleDismissReminder = () => {
     if (typeof window === "undefined") return;
-    const today = new Date();
-    const date = `${today.getFullYear()}-${String(
-      today.getMonth() + 1
-    ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    const date = getTodayString();
     window.localStorage.setItem(DISMISSED_KEY, date);
     setDismissedForToday(true);
   };
