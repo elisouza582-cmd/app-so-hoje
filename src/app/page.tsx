@@ -12,6 +12,7 @@ import {
 const emptyInputs = ["", "", ""];
 const DISMISSED_KEY = "sohoje:dismissed";
 const ONBOARDED_KEY = "sohoje:onboarded";
+const BONUS_KEY = "sohoje:bonus-notes";
 
 const buildInputsFromEntry = (entry: DailyEntry) => {
   const values = entry.priorities.map((priority) => priority.text);
@@ -43,6 +44,7 @@ export default function Home() {
   const [inputs, setInputs] = useState<string[]>(emptyInputs);
   const [dismissedForToday, setDismissedForToday] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [bonusNotes, setBonusNotes] = useState("");
   const getTodayString = () => {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(
@@ -64,6 +66,19 @@ export default function Home() {
       const dismissed = window.localStorage.getItem(DISMISSED_KEY);
       setDismissedForToday(dismissed === date);
       setShowOnboarding(!window.localStorage.getItem(ONBOARDED_KEY));
+      const bonusRaw = window.localStorage.getItem(BONUS_KEY);
+      if (bonusRaw) {
+        try {
+          const parsed = JSON.parse(bonusRaw) as { date: string; text: string };
+          if (parsed?.date === date) {
+            setBonusNotes(parsed.text ?? "");
+          } else {
+            window.localStorage.removeItem(BONUS_KEY);
+          }
+        } catch {
+          window.localStorage.removeItem(BONUS_KEY);
+        }
+      }
     }
   }, []);
 
@@ -125,6 +140,10 @@ export default function Home() {
     setEditing(false);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(ONBOARDED_KEY, "1");
+      window.localStorage.setItem(
+        BONUS_KEY,
+        JSON.stringify({ date: getTodayString(), text: bonusNotes })
+      );
       setShowOnboarding(false);
     }
   };
@@ -157,9 +176,13 @@ export default function Home() {
       if (!confirmed) return;
     }
     clearToday();
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(BONUS_KEY);
+    }
     const fresh = getTodayEntry();
     setEntry(fresh);
     setInputs(emptyInputs);
+    setBonusNotes("");
     setEditing(true);
   };
 
@@ -181,6 +204,12 @@ export default function Home() {
           Prioridades do dia
         </p>
         <h1 className="text-4xl font-bold text-slate-900">Só Hoje</h1>
+        <p className="text-base font-semibold text-slate-800">
+          Escolha suas 3 prioridades do dia. O resto é bônus.
+        </p>
+        <p className="text-sm text-slate-500">
+          Se você fizer só essas 3, o dia já valeu.
+        </p>
         <p className="text-base text-slate-600">
           O que realmente precisa ser feito hoje?
         </p>
@@ -217,11 +246,27 @@ export default function Home() {
                   onChange={(event) =>
                     handleInputChange(index, event.target.value)
                   }
-                  placeholder={`Prioridade ${index + 1}`}
+                  placeholder={
+                    index === 0
+                      ? "Prioridade 1 (a mais importante)"
+                      : `Prioridade ${index + 1}`
+                  }
                   className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                 />
               </label>
             ))}
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-slate-700">
+              Bônus (opcional)
+            </p>
+            <textarea
+              value={bonusNotes}
+              onChange={(event) => setBonusNotes(event.target.value)}
+              placeholder="Outras tarefas, lembretes ou anotações rápidas…"
+              rows={5}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            />
           </div>
           <button
             type="button"
@@ -261,6 +306,20 @@ export default function Home() {
                   </span>
                 </label>
               ))
+            )}
+          </div>
+          <div className="space-y-3">
+            <p className="text-sm font-semibold text-slate-700">
+              Bônus (opcional)
+            </p>
+            {bonusNotes ? (
+              <p className="whitespace-pre-wrap text-sm text-slate-600">
+                {bonusNotes}
+              </p>
+            ) : (
+              <p className="text-sm text-slate-400">
+                Nenhuma anotação bônus hoje.
+              </p>
             )}
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
