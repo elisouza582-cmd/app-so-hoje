@@ -13,6 +13,7 @@ const emptyInputs = ["", "", ""];
 const DISMISSED_KEY = "sohoje:dismissed";
 const ONBOARDED_KEY = "sohoje:onboarded";
 const BONUS_KEY = "sohoje:bonus-notes";
+const APP_VERSION = "1.3.1";
 
 const buildInputsFromEntry = (entry: DailyEntry) => {
   const values = entry.priorities.map((priority) => priority.text);
@@ -84,7 +85,12 @@ export default function Home() {
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js");
+      navigator.serviceWorker.register("/sw.js").then((registration) => {
+        registration.update().catch(() => {});
+      });
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        window.location.reload();
+      });
     }
   }, []);
 
@@ -348,6 +354,7 @@ export default function Home() {
         <p className="mt-2 text-lg font-semibold">
           Você concluiu {summary.done} de {summary.total} prioridades hoje.
         </p>
+        <p className="mt-4 text-xs text-slate-400">v{APP_VERSION}</p>
       </section>
     </main>
   );
